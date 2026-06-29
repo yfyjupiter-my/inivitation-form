@@ -207,6 +207,7 @@ body {
 .rsvp-input::placeholder { color: var(--border); }
 
 .rsvp-attend-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) { .rsvp-attend-row { grid-template-columns: 1fr; } }
 .rsvp-attend-opt input {
   position: absolute;
   opacity: 0;
