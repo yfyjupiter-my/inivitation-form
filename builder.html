@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitation Builder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Warm & Earthy tokens ── */
+    :root {
+      --bg:           #fdf6ee;
+      --surface:      #fffaf4;
+      --subtle:       #f5ebe0;
+      --border:       #e8d5c0;
+      --text:         #2c1810;
+      --text-muted:   #8b6a52;
+      --accent:       #c2410c;
+      --accent-h:     #9a3412;
+      --accent-light: #fde8de;
+      --radius-sm:    6px;
+      --radius:       12px;
+      --radius-lg:    20px;
+      --shadow:       0 2px 8px rgb(44 24 16/.08);
+      --shadow-md:    0 6px 20px rgb(44 24 16/.12);
+      --shadow-lg:    0 16px 48px rgb(44 24 16/.18);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 56px 1fr;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .brand { font-weight: 700; font-size: 15px; color: var(--text); letter-spacing: -.01em; }
+    .brand span { color: var(--accent); }
+    .header-actions { display: flex; gap: 8px; }
+
+    /* ── Layout ── */
+    .workspace {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      overflow: hidden;
+      height: calc(100vh - 56px);
+    }
+
+    /* ── Editor panel ── */
+    .editor {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-head {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 12px; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    input, textarea, select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+    input::placeholder, textarea::placeholder { color: var(--border); }
+    textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ── Style picker ── */
+    .style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .style-opt {
+      position: relative;
+      cursor: pointer;
+    }
+    .style-opt input { display: none; }
+    .style-thumb {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      cursor: pointer;
+      transition: border-color 150ms, color 150ms, background 150ms;
+      text-align: center;
+    }
+    .style-thumb .thumb-icon { font-size: 18px; }
+    .style-opt input:checked + .style-thumb {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ── Color swatch picker ── */
+    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 150ms, border-color 150ms;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: var(--text); transform: scale(1.1); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: background 150ms, transform 80ms;
+      font-family: inherit;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-secondary { background: var(--subtle); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── Preview panel ── */
+    .preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      overflow-y: auto;
+      gap: 16px;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--subtle) 0px, var(--subtle) 1px,
+        transparent 1px, transparent 24px
+      );
+    }
+
+    .preview-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── The invitation card ── */
+    .card-wrap {
+      width: 100%;
+      max-width: 480px;
+      perspective: 1000px;
+    }
+
+    .invite-card {
+      background: var(--card-bg, #fffaf4);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      padding: 48px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 400ms cubic-bezier(.25,.8,.25,1);
+    }
+    .invite-card:hover { transform: translateY(-4px); }
+
+    /* decorative top border */
+    .invite-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.6);
+      pointer-events: none;
+    }
+
+    /* Ornament line */
+    .ornament {
+      display: flex; align-items: center; gap: 12px;
+      margin: 16px 0;
+      color: var(--card-accent, #c2410c);
+    }
+    .ornament::before, .ornament::after {
+      content: ''; flex: 1;
+      height: 1px;
+      background: currentColor;
+      opacity: .35;
+    }
+    .ornament-icon { font-size: 18px; opacity: .7; }
+
+    .card-tag {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--card-accent, #c2410c);
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 2rem; font-weight: 700;
+      line-height: 1.15;
+      color: var(--card-text, #2c1810);
+      margin-bottom: 8px;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .card-subtitle {
+      font-size: .95rem;
+      color: var(--card-muted, #8b6a52);
+      margin-bottom: 4px;
+    }
+
+    .card-divider {
+      margin: 20px auto;
+      width: 48px; height: 2px;
+      background: var(--card-accent, #c2410c);
+      border-radius: 99px;
+      opacity: .5;
+    }
+
+    .card-detail-row {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      margin: 20px 0;
+    }
+    .card-detail {
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .card-detail-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--card-accent, #c2410c);
+      opacity: .7;
+    }
+    .card-detail-value {
+      font-size: 14px; font-weight: 600;
+      color: var(--card-text, #2c1810);
+    }
+    .card-detail-sub {
+      font-size: 12px;
+      color: var(--card-muted, #8b6a52);
+    }
+
+    .card-message {
+      font-size: .9rem;
+      line-height: 1.65;
+      color: var(--card-muted, #8b6a52);
+      font-style: italic;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .card-rsvp {
+      display: inline-flex; align-items: center;
+      margin-top: 28px;
+      padding: 10px 28px;
+      background: var(--card-accent, #c2410c);
+      color: #fff;
+      border-radius: 99px;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      border: none; cursor: pointer;
+      transition: opacity 150ms, transform 100ms;
+    }
+    .card-rsvp:hover { opacity: .88; transform: scale(1.03); }
+
+    /* ── RSVP form card ── */
+    .rsvp-card {
+      background: var(--card-bg, #fffaf4);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      padding: 40px 40px 44px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .rsvp-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.6);
+      pointer-events: none;
+    }
+    .rsvp-card-tag {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--card-accent, #c2410c);
+      margin-bottom: 8px;
+    }
+    .rsvp-card-title {
+      font-size: 1.5rem; font-weight: 700;
+      color: var(--card-text, #2c1810);
+      font-family: Georgia, 'Times New Roman', serif;
+      margin-bottom: 4px;
+    }
+    .rsvp-card-sub {
+      font-size: .85rem;
+      color: var(--card-muted, #8b6a52);
+      margin-bottom: 24px;
+    }
+    .rsvp-fields {
+      display: flex; flex-direction: column; gap: 14px;
+      text-align: left;
+    }
+    .rsvp-field { display: flex; flex-direction: column; gap: 5px; }
+    .rsvp-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: var(--card-accent, #c2410c);
+      opacity: .8;
+    }
+    .rsvp-input {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--card-text, #2c1810);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .rsvp-input:focus {
+      border-color: var(--card-accent, #c2410c);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-accent, #c2410c) 15%, transparent);
+    }
+    .rsvp-input::placeholder { color: var(--border); }
+    .rsvp-attend-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .rsvp-attend-opt { position: relative; }
+    .rsvp-attend-opt input { display: none; }
+    .rsvp-attend-label {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      color: var(--card-muted, #8b6a52);
+      cursor: pointer;
+      transition: border-color 150ms, color 150ms, background 150ms;
+      background: var(--bg);
+    }
+    .rsvp-attend-opt input:checked + .rsvp-attend-label {
+      border-color: var(--card-accent, #c2410c);
+      color: var(--card-accent, #c2410c);
+      background: color-mix(in srgb, var(--card-accent, #c2410c) 10%, transparent);
+    }
+    .rsvp-submit {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: var(--card-accent, #c2410c);
+      color: #fff;
+      border: none; border-radius: 99px;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 150ms, transform 100ms;
+    }
+    .rsvp-submit:hover:not(:disabled) { opacity: .88; }
+    .rsvp-submit:active { transform: scale(.98); }
+    .rsvp-submit:disabled { opacity: .7; cursor: not-allowed; }
+
+    /* Button loading spinner */
+    .rsvp-submit .btn-text { transition: opacity 200ms; }
+    .rsvp-submit.loading .btn-text { opacity: 0; }
+    .rsvp-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0; margin: auto;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(.6);
+      transition: opacity 150ms, transform 150ms;
+    }
+    .rsvp-submit.loading::after {
+      opacity: 1;
+      transform: scale(1);
+      animation: spin 700ms linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Success screen ── */
+    .rsvp-confirm {
+      display: none;
+      flex-direction: column; align-items: center;
+      padding: 8px 0 16px;
+      position: relative;
+    }
+
+    /* Confetti particles */
+    .confetti-wrap {
+      position: absolute;
+      inset: 0; pointer-events: none;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    .confetti-wrap span {
+      position: absolute;
+      top: 30%;
+      width: 7px; height: 7px;
+      border-radius: 2px;
+      opacity: 0;
+      animation: confettiBurst 900ms ease-out forwards;
+    }
+    @keyframes confettiBurst {
+      0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--r)) scale(.5); }
+    }
+
+    /* SVG checkmark circle */
+    .success-icon {
+      width: 72px; height: 72px;
+      margin-bottom: 16px;
+      animation: popIn 400ms cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .success-icon circle {
+      fill: color-mix(in srgb, var(--card-accent, #c2410c) 12%, transparent);
+      stroke: var(--card-accent, #c2410c);
+      stroke-width: 1.5;
+    }
+    .success-icon path {
+      fill: none;
+      stroke: var(--card-accent, #c2410c);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 36;
+      stroke-dashoffset: 36;
+      animation: drawCheck 450ms 300ms cubic-bezier(.65,0,.35,1) forwards;
+    }
+    @keyframes drawCheck {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* declined X icon */
+    .success-icon.declined circle {
+      fill: color-mix(in srgb, #6b7280 12%, transparent);
+      stroke: #6b7280;
+    }
+    .success-icon.declined path { stroke: #6b7280; }
+
+    /* Success content staggered fade-up */
+    .rsvp-confirm > *:not(.confetti-wrap) {
+      animation: fadeUp 380ms ease both;
+    }
+    .rsvp-confirm .success-icon   { animation-delay: 0ms; }
+    .rsvp-confirm .success-title  { animation-delay: 80ms; }
+    .rsvp-confirm .success-msg    { animation-delay: 140ms; }
+    .rsvp-confirm .success-pills  { animation-delay: 200ms; }
+    .rsvp-confirm .rsvp-edit-link { animation-delay: 260ms; }
+    @keyframes fadeUp {
+      0%   { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shakeField {
+      0%,100% { transform: translateX(0); border-color: var(--error, #be123c); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+
+    .success-title {
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--card-text, #2c1810);
+      font-family: Georgia, 'Times New Roman', serif;
+      margin-bottom: 6px;
+    }
+    .success-msg {
+      font-size: .875rem;
+      color: var(--card-muted, #8b6a52);
+      line-height: 1.65;
+      max-width: 280px;
+    }
+    .success-pills {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+      margin-top: 12px;
+    }
+    .success-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px;
+      background: color-mix(in srgb, var(--card-accent, #c2410c) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--card-accent, #c2410c) 25%, transparent);
+      border-radius: 99px;
+      font-size: 12px; font-weight: 600;
+      color: var(--card-accent, #c2410c);
+    }
+    .rsvp-edit-link {
+      font-size: 12px;
+      color: var(--card-muted, #8b6a52);
+      text-decoration: underline;
+      cursor: pointer;
+      border: none; background: none;
+      font-family: inherit;
+      margin-top: 16px;
+    }
+    .rsvp-edit-link:hover { color: var(--card-accent, #c2410c); }
+
+    /* connector arrow between cards */
+    .cards-connector {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      color: var(--card-accent, #c2410c);
+      opacity: .5;
+      font-size: 20px;
+    }
+    .cards-connector span { display: block; line-height: 1; }
+
+    /* Style variant overrides for rsvp-card */
+    body.style-rustic .rsvp-card {
+      border: 3px solid var(--card-accent, #c2410c);
+      border-radius: 4px;
+    }
+    body.style-elegant .rsvp-card {
+      background: linear-gradient(135deg, #fffaf4 0%, #fde8de 100%);
+    }
+
+    /* ── Style variants ── */
+    body.style-elegant .invite-card {
+      background: linear-gradient(135deg, #fffaf4 0%, #fde8de 100%);
+      padding: 56px 48px;
+    }
+    body.style-elegant .card-title { font-size: 2.4rem; }
+    body.style-elegant .ornament { margin: 20px 0; }
+
+    body.style-rustic .invite-card {
+      background: var(--card-bg, #fffaf4);
+      border: 3px solid var(--card-accent, #c2410c);
+      border-radius: 4px;
+    }
+    body.style-rustic .invite-card::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid var(--card-accent, #c2410c);
+      border-radius: 0;
+      pointer-events: none;
+      opacity: .3;
+    }
+    body.style-rustic .card-title { font-family: Georgia, serif; letter-spacing: .02em; }
+
+    /* ── Color schemes ── */
+    .scheme-terracotta { --card-bg: #fffaf4; --card-accent: #c2410c; --card-text: #2c1810; --card-muted: #8b6a52; }
+    .scheme-forest     { --card-bg: #f4faf5; --card-accent: #166534; --card-text: #14301a; --card-muted: #4a7c59; }
+    .scheme-navy       { --card-bg: #f4f6fa; --card-accent: #1e3a8a; --card-text: #0f1b3c; --card-muted: #4a5680; }
+    .scheme-rose       { --card-bg: #fdf4f7; --card-accent: #be185d; --card-text: #3d0f23; --card-muted: #8b4a66; }
+    .scheme-slate      { --card-bg: #f4f6f8; --card-accent: #374151; --card-text: #111827; --card-muted: #6b7280; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; }
+      header, .editor, .preview-label { display: none !important; }
+      .workspace { display: block; }
+      .preview { background: white; padding: 0; }
+      .card-wrap { max-width: 100%; }
+      .invite-card { box-shadow: none; }
+    }
+
+    /* ── Scrollbar ── */
+    .editor::-webkit-scrollbar { width: 4px; }
+    .editor::-webkit-scrollbar-track { background: transparent; }
+    .editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  </style>
+</head>
+<body class="style-minimal scheme-terracotta">
+
+<header>
+  <div class="brand">Invite<span>.</span>Build</div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn btn-primary btn-sm" onclick="copyLink()">Copy link</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- ── Editor ── -->
+  <aside class="editor">
+
+    <div>
+      <div class="section-head">Event details</div>
+      <div class="field-group">
+        <div class="field">
+          <label>Event type</label>
+          <select id="tag" oninput="sync('tag','card-tag')">
+            <option value="You're Invited">You're Invited</option>
+            <option value="Wedding Invitation">Wedding Invitation</option>
+            <option value="Birthday Celebration">Birthday Celebration</option>
+            <option value="Baby Shower">Baby Shower</option>
+            <option value="Graduation Party">Graduation Party</option>
+            <option value="Holiday Gathering">Holiday Gathering</option>
+            <option value="Dinner Party">Dinner Party</option>
+            <option value="Corporate Event">Corporate Event</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Title / Names</label>
+          <input id="title" type="text" placeholder="Sarah & James" value="Sarah & James" oninput="sync('title','card-title')">
+        </div>
+        <div class="field">
+          <label>Subtitle</label>
+          <input id="subtitle" type="text" placeholder="Request the pleasure of your company" value="Request the pleasure of your company" oninput="sync('subtitle','card-subtitle')">
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Date</label>
+            <input id="date" type="text" placeholder="Saturday, July 11" value="Saturday, July 11" oninput="sync('date','card-date')">
+          </div>
+          <div class="field">
+            <label>Year</label>
+            <input id="year" type="text" placeholder="2026" value="2026" oninput="sync('year','card-year')">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Time</label>
+            <input id="time" type="text" placeholder="12:00 PM - 5:00 PM" value="12:00 PM - 5:00 PM" oninput="sync('time','card-time')">
+          </div>
+          <div class="field">
+            <label>Dress code</label>
+            <input id="dress" type="text" placeholder="Formal attire" value="Formal attire" oninput="sync('dress','card-dress')">
+          </div>
+        </div>
+        <div class="field">
+          <label>Venue name</label>
+          <input id="venue" type="text" placeholder="Savana Residences" value="Savana Residences" oninput="sync('venue','card-venue')">
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <input id="address" type="text" placeholder="123 Rose Garden Ave, Melbourne" value="123 Rose Garden Ave, Melbourne" oninput="sync('address','card-address')">
+        </div>
+        <div class="field">
+          <label>Personal message</label>
+          <textarea id="message" oninput="sync('message','card-message')">"Together with their families, they invite you to celebrate their love."</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-head">Card style</div>
+      <div class="style-grid">
+        <label class="style-opt">
+          <input type="radio" name="style" value="style-minimal" checked onchange="setStyle(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">◻</span>Minimal</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="style" value="style-elegant" onchange="setStyle(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">✦</span>Elegant</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="style" value="style-rustic" onchange="setStyle(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">⊞</span>Rustic</div>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-head">Color scheme</div>
+      <div class="swatch-row">
+        <div class="swatch active" style="background:#c2410c" title="Terracotta" onclick="setScheme('terracotta',this)"></div>
+        <div class="swatch" style="background:#166534" title="Forest" onclick="setScheme('forest',this)"></div>
+        <div class="swatch" style="background:#1e3a8a" title="Navy" onclick="setScheme('navy',this)"></div>
+        <div class="swatch" style="background:#be185d" title="Rose" onclick="setScheme('rose',this)"></div>
+        <div class="swatch" style="background:#374151" title="Slate" onclick="setScheme('slate',this)"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-head">Ornament</div>
+      <div class="style-grid">
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="♡" checked onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">♡</span>Heart</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="✦" onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">✦</span>Star</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="❧" onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">❧</span>Floral</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="◆" onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">◆</span>Diamond</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="〜" onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">〜</span>Wave</div>
+        </label>
+        <label class="style-opt">
+          <input type="radio" name="ornament" value="•" onchange="setOrnament(this.value)">
+          <div class="style-thumb"><span class="thumb-icon">•</span>Dot</div>
+        </label>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Preview ── -->
+  <main class="preview">
+    <div class="preview-label">Live preview</div>
+
+    <div class="card-wrap">
+      <div class="invite-card">
+        <div id="card-tag" class="card-tag">You're Invited</div>
+
+        <div class="ornament">
+          <span id="card-ornament" class="ornament-icon">♡</span>
+        </div>
+
+        <div id="card-title" class="card-title">Sarah &amp; James</div>
+        <div id="card-subtitle" class="card-subtitle">Request the pleasure of your company</div>
+
+        <div class="card-divider"></div>
+
+        <p id="card-message" class="card-message">"Together with their families, they invite you to celebrate their love."</p>
+
+        <div class="card-detail-row">
+          <div class="card-detail">
+            <div class="card-detail-label">Date</div>
+            <div id="card-date" class="card-detail-value">Saturday, July 11</div>
+            <div id="card-year" class="card-detail-sub">2026</div>
+          </div>
+          <div class="card-detail">
+            <div class="card-detail-label">Time</div>
+            <div id="card-time" class="card-detail-value">12:00 PM - 5:00 PM</div>
+          </div>
+          <div class="card-detail">
+            <div class="card-detail-label">Location</div>
+            <div id="card-venue" class="card-detail-value">Savana Residences</div>
+            <img src="qrcode.png" alt="Location QR Code" style="width:100px;height:100px;margin-top:8px;border-radius:6px;display:block;margin-left:auto;margin-right:auto;">
+          </div>
+        </div>
+
+        <div class="ornament">
+          <span class="ornament-ref ornament-icon">♡</span>
+        </div>
+
+        <button class="card-rsvp" onclick="scrollToRsvp()">RSVP Now</button>
+      </div>
+    </div>
+
+    <!-- connector -->
+    <div class="cards-connector" aria-hidden="true">
+      <span>↓</span>
+    </div>
+
+    <!-- ── RSVP form card ── -->
+    <div class="card-wrap" id="rsvp-section">
+      <div class="rsvp-card">
+        <div class="rsvp-card-tag">RSVP</div>
+        <div class="ornament">
+          <span class="ornament-ref ornament-icon">♡</span>
+        </div>
+        <div class="rsvp-card-title">Will you be joining us?</div>
+        <div class="rsvp-card-sub">Please confirm your attendance by filling in the details below.</div>
+
+        <div id="rsvp-form-body">
+          <div class="rsvp-fields">
+
+            <div class="rsvp-field">
+              <label class="rsvp-label">Attendance</label>
+              <div class="rsvp-attend-row">
+                <label class="rsvp-attend-opt">
+                  <input type="radio" name="attend" value="yes" checked>
+                  <span class="rsvp-attend-label">✓ &nbsp;Joyfully accepts</span>
+                </label>
+                <label class="rsvp-attend-opt">
+                  <input type="radio" name="attend" value="no">
+                  <span class="rsvp-attend-label">✕ &nbsp;Regretfully declines</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="rsvp-field">
+              <label class="rsvp-label" for="rsvp-name">Guest name</label>
+              <input id="rsvp-name" class="rsvp-input" type="text" placeholder="Your full name">
+            </div>
+
+            <div class="rsvp-field">
+              <label class="rsvp-label" for="rsvp-guests">Total attendees</label>
+              <input id="rsvp-guests" class="rsvp-input" type="number" min="1" max="20" placeholder="e.g. 2">
+            </div>
+
+            <div class="rsvp-field">
+              <label class="rsvp-label" for="rsvp-arrive">Estimated arrival time</label>
+              <input id="rsvp-arrive" class="rsvp-input" type="time" value="16:00">
+            </div>
+
+          </div>
+
+          <button class="rsvp-submit" id="rsvp-submit-btn" onclick="submitRsvp()">
+            <span class="btn-text">Confirm RSVP</span>
+          </button>
+        </div>
+
+        <!-- success screen (hidden until submit) -->
+        <div class="rsvp-confirm" id="rsvp-confirm">
+          <div class="confetti-wrap" id="confetti-wrap"></div>
+
+          <svg class="success-icon" id="success-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="26" cy="26" r="24"/>
+            <path d="M15 27 l8 8 l14-16"/>
+          </svg>
+
+          <div class="success-title" id="success-title">You're confirmed!</div>
+          <p class="success-msg" id="rsvp-confirm-msg">We look forward to celebrating with you.</p>
+          <div class="success-pills" id="success-pills"></div>
+          <button class="rsvp-edit-link" onclick="editRsvp()">Edit response</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<script>
+  // Live sync editor → card
+  function sync(inputId, cardId) {
+    const val = document.getElementById(inputId).value;
+    const el  = document.getElementById(cardId);
+    if (el) el.textContent = val;
+  }
+
+  // Style switcher
+  const STYLES = ['style-minimal','style-elegant','style-rustic'];
+  function setStyle(cls) {
+    document.body.classList.remove(...STYLES);
+    document.body.classList.add(cls);
+  }
+
+  // Color scheme
+  function setScheme(name, swatch) {
+    document.body.className = document.body.className.replace(/scheme-\w+/, `scheme-${name}`);
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    swatch.classList.add('active');
+  }
+
+  // Ornament
+  function setOrnament(char) {
+    document.querySelectorAll('#card-ornament, .ornament-ref').forEach(el => el.textContent = char);
+  }
+
+  // Scroll to RSVP card
+  function scrollToRsvp() {
+    document.getElementById('rsvp-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Submit RSVP
+  function submitRsvp() {
+    const name   = document.getElementById('rsvp-name').value.trim();
+    const guests = document.getElementById('rsvp-guests').value.trim();
+    const arrive = document.getElementById('rsvp-arrive').value;
+    const attend = document.querySelector('input[name="attend"]:checked').value;
+
+    if (!name)   { shake(document.getElementById('rsvp-name'));   return; }
+    if (!guests) { shake(document.getElementById('rsvp-guests')); return; }
+
+    const btn = document.getElementById('rsvp-submit-btn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    setTimeout(() => {
+      // Format arrival time 12h
+      let arriveStr = arrive;
+      if (arrive) {
+        const [h, m] = arrive.split(':').map(Number);
+        arriveStr = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+      }
+
+      const accepting = attend === 'yes';
+
+      // Update icon for decline
+      const icon = document.getElementById('success-icon');
+      icon.classList.toggle('declined', !accepting);
+
+      document.getElementById('success-title').textContent =
+        accepting ? "You're confirmed!" : "We'll miss you";
+
+      document.getElementById('rsvp-confirm-msg').textContent = accepting
+        ? `We look forward to celebrating with you, ${name}!`
+        : `Thank you for letting us know, ${name}. You'll be missed!`;
+
+      // Render summary pills
+      const pillsEl = document.getElementById('success-pills');
+      pillsEl.innerHTML = '';
+      if (accepting) {
+        [
+          ['👥', `${guests} guest${guests > 1 ? 's' : ''}`],
+          ['🕐', `Arriving at ${arriveStr}`],
+        ].forEach(([icon, label]) => {
+          const p = document.createElement('span');
+          p.className = 'success-pill';
+          p.textContent = `${icon}  ${label}`;
+          pillsEl.appendChild(p);
+        });
+      }
+
+      // Swap form → success
+      document.getElementById('rsvp-form-body').style.display = 'none';
+      const confirmEl = document.getElementById('rsvp-confirm');
+      confirmEl.style.display = 'flex';
+
+      // Force reflow so animations re-trigger on re-submit
+      confirmEl.querySelectorAll('*').forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight; // reflow
+        el.style.animation = '';
+      });
+
+      // Confetti burst (accepting only)
+      if (accepting) spawnConfetti();
+
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }, 700);
+  }
+
+  // Edit RSVP — reset back to form
+  function editRsvp() {
+    document.getElementById('rsvp-form-body').style.display = '';
+    document.getElementById('rsvp-confirm').style.display = 'none';
+    document.getElementById('confetti-wrap').innerHTML = '';
+  }
+
+  // Shake animation for missing fields
+  function shake(el) {
+    el.focus();
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shakeField 350ms ease';
+    el.addEventListener('animationend', () => el.style.animation = '', { once: true });
+  }
+
+  // Confetti
+  const CONFETTI_COLORS = ['#c2410c','#e07a50','#f0a07a','#4a3728','#d4b8a0','#f9c4a8'];
+  function spawnConfetti() {
+    const wrap = document.getElementById('confetti-wrap');
+    wrap.innerHTML = '';
+    for (let i = 0; i < 28; i++) {
+      const s = document.createElement('span');
+      const angle = (Math.random() * 360);
+      const dist  = 60 + Math.random() * 120;
+      const tx = Math.cos(angle * Math.PI / 180) * dist;
+      const ty = -(40 + Math.random() * 140);
+      s.style.cssText = `
+        left: ${20 + Math.random() * 60}%;
+        background: ${CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]};
+        --tx: ${tx}px; --ty: ${ty}px; --r: ${Math.random() * 720 - 360}deg;
+        animation-delay: ${Math.random() * 300}ms;
+        animation-duration: ${700 + Math.random() * 400}ms;
+        border-radius: ${Math.random() > .5 ? '50%' : '2px'};
+        width: ${5 + Math.random() * 5}px;
+        height: ${5 + Math.random() * 5}px;
+      `;
+      wrap.appendChild(s);
+    }
+  }
+
+  // Copy link (copies current URL)
+  function copyLink() {
+    navigator.clipboard.writeText(location.href).then(() => {
+      const btn = event.currentTarget;
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  }
+</script>
+</body>
+</html>
