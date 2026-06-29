@@ -13,6 +13,8 @@
   --radius-sm:    6px;
   --radius:       12px;
   --shadow-lg:    0 16px 48px rgb(44 24 16/.18);
+  --space-2:      16px;
+  --space-5:      40px;
 
 }
 
@@ -366,12 +368,14 @@ body {
 
 /* ── Progress stepper ── */
 .stepper {
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-start; justify-content: center;
   gap: 0; margin-bottom: 20px;
 }
 .step {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   position: relative;
+  width: 28px; /* pin to dot width so labels don't shift the dot off-center */
+  padding: 0 var(--space-5);
 }
 .step-dot {
   width: 28px; height: 28px; border-radius: 50%;
@@ -403,12 +407,10 @@ body {
 .step-connector {
   width: 48px; height: 2px;
   background: var(--border);
-  margin: 0 4px;
-  margin-bottom: 18px; /* align with dot center */
+  margin: 13px 4px 0; /* 13px = (28px dot - 2px line) / 2, centers on dot */
   flex-shrink: 0;
   border-radius: 99px;
   transition: background 300ms;
-  position: relative; top: -9px;
 }
 .step-connector.done { background: var(--accent); opacity: .4; }
 
