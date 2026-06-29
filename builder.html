@@ -109,7 +109,16 @@
       position: relative;
       cursor: pointer;
     }
-    .style-opt input { display: none; }
+    .style-opt input {
+      position: absolute;
+      opacity: 0;
+      width: 1px; height: 1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+    }
+    .style-opt input:focus-visible + .style-thumb {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     .style-thumb {
       display: flex;
       flex-direction: column;
@@ -142,6 +151,7 @@
       cursor: pointer;
       border: 2px solid transparent;
       transition: transform 150ms, border-color 150ms;
+      padding: 0;
     }
     .swatch:hover { transform: scale(1.15); }
     .swatch.active { border-color: var(--text); transform: scale(1.1); }
@@ -369,7 +379,16 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
     .rsvp-attend-opt { position: relative; }
-    .rsvp-attend-opt input { display: none; }
+    .rsvp-attend-opt input {
+      position: absolute;
+      opacity: 0;
+      width: 1px; height: 1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+    }
+    .rsvp-attend-opt input:focus-visible + .rsvp-attend-label {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     .rsvp-attend-label {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       padding: 10px;
@@ -629,7 +648,7 @@
       <div class="section-head">Event details</div>
       <div class="field-group">
         <div class="field">
-          <label>Event type</label>
+          <label for="tag">Event type</label>
           <select id="tag" oninput="sync('tag','card-tag')">
             <option value="You're Invited">You're Invited</option>
             <option value="Wedding Invitation">Wedding Invitation</option>
@@ -642,43 +661,43 @@
           </select>
         </div>
         <div class="field">
-          <label>Title / Names</label>
+          <label for="title">Title / Names</label>
           <input id="title" type="text" placeholder="Sarah & James" value="Sarah & James" oninput="sync('title','card-title')">
         </div>
         <div class="field">
-          <label>Subtitle</label>
+          <label for="subtitle">Subtitle</label>
           <input id="subtitle" type="text" placeholder="Request the pleasure of your company" value="Request the pleasure of your company" oninput="sync('subtitle','card-subtitle')">
         </div>
         <div class="row-2">
           <div class="field">
-            <label>Date</label>
+            <label for="date">Date</label>
             <input id="date" type="text" placeholder="Saturday, July 11" value="Saturday, July 11" oninput="sync('date','card-date')">
           </div>
           <div class="field">
-            <label>Year</label>
+            <label for="year">Year</label>
             <input id="year" type="text" placeholder="2026" value="2026" oninput="sync('year','card-year')">
           </div>
         </div>
         <div class="row-2">
           <div class="field">
-            <label>Time</label>
+            <label for="time">Time</label>
             <input id="time" type="text" placeholder="12:00 PM - 5:00 PM" value="12:00 PM - 5:00 PM" oninput="sync('time','card-time')">
           </div>
           <div class="field">
-            <label>Dress code</label>
+            <label for="dress">Dress code</label>
             <input id="dress" type="text" placeholder="Formal attire" value="Formal attire" oninput="sync('dress','card-dress')">
           </div>
         </div>
         <div class="field">
-          <label>Venue name</label>
+          <label for="venue">Venue name</label>
           <input id="venue" type="text" placeholder="Savana Residences" value="Savana Residences" oninput="sync('venue','card-venue')">
         </div>
         <div class="field">
-          <label>Address</label>
+          <label for="address">Address</label>
           <input id="address" type="text" placeholder="123 Rose Garden Ave, Melbourne" value="123 Rose Garden Ave, Melbourne" oninput="sync('address','card-address')">
         </div>
         <div class="field">
-          <label>Personal message</label>
+          <label for="message">Personal message</label>
           <textarea id="message" oninput="sync('message','card-message')">"Together with their families, they invite you to celebrate their love."</textarea>
         </div>
       </div>
@@ -705,11 +724,11 @@
     <div>
       <div class="section-head">Color scheme</div>
       <div class="swatch-row">
-        <div class="swatch active" style="background:#c2410c" title="Terracotta" onclick="setScheme('terracotta',this)"></div>
-        <div class="swatch" style="background:#166534" title="Forest" onclick="setScheme('forest',this)"></div>
-        <div class="swatch" style="background:#1e3a8a" title="Navy" onclick="setScheme('navy',this)"></div>
-        <div class="swatch" style="background:#be185d" title="Rose" onclick="setScheme('rose',this)"></div>
-        <div class="swatch" style="background:#374151" title="Slate" onclick="setScheme('slate',this)"></div>
+        <button class="swatch active" style="background:#c2410c" title="Terracotta" onclick="setScheme('terracotta',this)"></button>
+        <button class="swatch" style="background:#166534" title="Forest" onclick="setScheme('forest',this)"></button>
+        <button class="swatch" style="background:#1e3a8a" title="Navy" onclick="setScheme('navy',this)"></button>
+        <button class="swatch" style="background:#be185d" title="Rose" onclick="setScheme('rose',this)"></button>
+        <button class="swatch" style="background:#374151" title="Slate" onclick="setScheme('slate',this)"></button>
       </div>
     </div>
 
@@ -757,7 +776,7 @@
           <span id="card-ornament" class="ornament-icon">♡</span>
         </div>
 
-        <div id="card-title" class="card-title">Sarah &amp; James</div>
+        <h1 id="card-title" class="card-title">Sarah &amp; James</h1>
         <div id="card-subtitle" class="card-subtitle">Request the pleasure of your company</div>
 
         <div class="card-divider"></div>
@@ -801,14 +820,14 @@
         <div class="ornament">
           <span class="ornament-ref ornament-icon">♡</span>
         </div>
-        <div class="rsvp-card-title">Will you be joining us?</div>
+        <h2 class="rsvp-card-title">Will you be joining us?</h2>
         <div class="rsvp-card-sub">Please confirm your attendance by filling in the details below.</div>
 
         <div id="rsvp-form-body">
           <div class="rsvp-fields">
 
-            <div class="rsvp-field">
-              <label class="rsvp-label">Attendance</label>
+            <fieldset class="rsvp-field" style="border:none;padding:0;min-width:0">
+              <legend class="rsvp-label">Attendance</legend>
               <div class="rsvp-attend-row">
                 <label class="rsvp-attend-opt">
                   <input type="radio" name="attend" value="yes" checked>
@@ -819,7 +838,7 @@
                   <span class="rsvp-attend-label">✕ &nbsp;Regretfully declines</span>
                 </label>
               </div>
-            </div>
+            </fieldset>
 
             <div class="rsvp-field">
               <label class="rsvp-label" for="rsvp-name">Guest name</label>
@@ -852,7 +871,7 @@
             <path d="M15 27 l8 8 l14-16"/>
           </svg>
 
-          <div class="success-title" id="success-title">You're confirmed!</div>
+          <div class="success-title" id="success-title" tabindex="-1">You're confirmed!</div>
           <p class="success-msg" id="rsvp-confirm-msg">We look forward to celebrating with you.</p>
           <div class="success-pills" id="success-pills"></div>
           <button class="rsvp-edit-link" onclick="editRsvp()">Edit response</button>
@@ -957,6 +976,7 @@
         el.offsetHeight; // reflow
         el.style.animation = '';
       });
+      document.getElementById('success-title').focus();
 
       // Confetti burst (accepting only)
       if (accepting) spawnConfetti();

@@ -423,19 +423,27 @@
       .card { padding: 36px 24px; }
       .card-title { font-size: 1.6rem; }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slider, .card-rsvp-btn, .rsvp-submit, .success-icon,
+      .rsvp-confirm > *, .confetti-wrap span, .step-dot {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
   </style>
 </head>
 <body>
 
-<div class="stepper" id="stepper">
-  <div class="step active" id="step-1">
+<div class="stepper" id="stepper" role="list" aria-label="Progress">
+  <div class="step active" id="step-1" role="listitem" aria-current="step">
     <div class="step-dot">1</div>
     <div class="step-label">Invitation</div>
   </div>
-  <div class="step-connector" id="step-connector"></div>
-  <div class="step" id="step-2">
+  <div class="step-connector" id="step-connector" aria-hidden="true"></div>
+  <div class="step" id="step-2" role="listitem">
     <div class="step-dot">2</div>
-    <div class="step-label">RSVP</div>
+    <div class="step-label">Confirmation</div>
   </div>
 </div>
 
@@ -447,9 +455,9 @@
       <div class="card">
         <div class="card-tag">You're Invited</div>
 
-        <div class="ornament"><span class="ornament-icon">♡</span></div>
+        <div class="ornament"><span class="ornament-icon" aria-hidden="true">♡</span></div>
 
-        <div class="card-title">Sarah &amp; James</div>
+        <h1 class="card-title">Sarah &amp; James</h1>
         <div class="card-subtitle">Request the pleasure of your company</div>
 
         <div class="card-divider"></div>
@@ -476,7 +484,7 @@
           </div>
         </div>
 
-        <div class="ornament"><span class="ornament-icon">♡</span></div>
+        <div class="ornament"><span class="ornament-icon" aria-hidden="true">♡</span></div>
 
         <button class="card-rsvp-btn" onclick="goToRsvp()">
           Next &nbsp;→
@@ -490,11 +498,11 @@
         <button class="rsvp-back" onclick="goToInvite()">← Back to invitation</button>
 
         <div class="rsvp-card-tag">RSVP</div>
-        <div class="ornament"><span class="ornament-icon">♡</span></div>
-        <div class="rsvp-card-title">Will you be joining us?</div>
+        <div class="ornament"><span class="ornament-icon" aria-hidden="true">♡</span></div>
+        <h2 class="rsvp-card-title">Will you be joining us?</h2>
         <div class="rsvp-card-sub">Please confirm your attendance by filling in the details below.</div>
 
-        <div id="rsvp-form-body">
+        <form id="rsvp-form-body" onsubmit="submitRsvp(); return false;">
           <div class="rsvp-fields">
 
             <fieldset class="rsvp-field" style="border:none;padding:0;min-width:0">
@@ -528,22 +536,22 @@
 
           </div>
 
-          <button class="rsvp-submit" id="rsvp-submit-btn" onclick="submitRsvp()">
+          <button type="submit" class="rsvp-submit" id="rsvp-submit-btn">
             <span class="btn-text">Confirm RSVP</span>
           </button>
-          <p id="rsvp-error" style="display:none;color:var(--accent);text-align:center;margin-top:.75rem;font-size:.9rem;">Something went wrong — please try again.</p>
-        </div>
+          <p id="rsvp-error" role="alert" style="display:none;color:var(--accent);text-align:center;margin-top:.75rem;font-size:.9rem;">Something went wrong — please try again.</p>
+        </form>
 
         <!-- success / decline screen -->
         <div class="rsvp-confirm" id="rsvp-confirm">
-          <div class="confetti-wrap" id="confetti-wrap"></div>
+          <div class="confetti-wrap" id="confetti-wrap" aria-hidden="true"></div>
 
-          <svg class="success-icon" id="success-icon" viewBox="0 0 52 52" fill="none">
+          <svg class="success-icon" id="success-icon" viewBox="0 0 52 52" fill="none" aria-hidden="true">
             <circle cx="26" cy="26" r="24"/>
             <path d="M15 27 l8 8 l14-16"/>
           </svg>
 
-          <div class="success-title" id="success-title">You're confirmed!</div>
+          <div class="success-title" id="success-title" tabindex="-1">You're confirmed!</div>
           <p class="success-msg" id="rsvp-confirm-msg">We look forward to celebrating with you.</p>
           <div class="success-pills" id="success-pills"></div>
           <button class="rsvp-edit-link" onclick="editRsvp()">Edit response</button>
@@ -566,8 +574,12 @@
   }));
 
   function setStep(n) {
-    document.getElementById('step-1').className = 'step' + (n === 1 ? ' active' : ' done');
-    document.getElementById('step-2').className = 'step' + (n === 2 ? ' active' : '');
+    const s1 = document.getElementById('step-1');
+    const s2 = document.getElementById('step-2');
+    s1.className = 'step' + (n === 1 ? ' active' : ' done');
+    s2.className = 'step' + (n === 2 ? ' active' : '');
+    s1.ariaCurrent = n === 1 ? 'step' : null;
+    s2.ariaCurrent = n === 2 ? 'step' : null;
     document.getElementById('step-connector').className = 'step-connector' + (n === 2 ? ' done' : '');
   }
 
@@ -635,6 +647,7 @@
       animEls.forEach(el => { el.style.animation = 'none'; });
       confirmEl.offsetHeight; // ponytail: single reflow flush
       animEls.forEach(el => { el.style.animation = ''; });
+      document.getElementById('success-title').focus();
 
       if (accepting) spawnConfetti();
 
@@ -665,6 +678,7 @@
 
   const COLORS = ['#c2410c','#e07a50','#f0a07a','#4a3728','#d4b8a0','#f9c4a8'];
   function spawnConfetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const wrap = document.getElementById('confetti-wrap');
     wrap.innerHTML = '';
     for (let i = 0; i < 28; i++) {

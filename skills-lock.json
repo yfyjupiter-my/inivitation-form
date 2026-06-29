@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "design-token": {
+      "source": "Owl-Listener/designer-skills",
+      "sourceType": "github",
+      "skillPath": "design-systems/skills/design-token/SKILL.md",
+      "computedHash": "13d408ed09d2f7bf6ef2495430fcc25d1240a186e4396efd1badaeb4c84d3a0b"
+    },
+    "design-token-audit": {
+      "source": "Owl-Listener/designer-skills",
+      "sourceType": "github",
+      "skillPath": "designer-toolkit/skills/design-token-audit/SKILL.md",
+      "computedHash": "9c7a6c5059051c763b98395a7f9b193ac985c13d959bb52c6951fbbf4c97cf2b"
+    },
+    "prd": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/prd/SKILL.md",
+      "computedHash": "1f3e1f005fc40fda85d250ae906c8ee4f7e8e833e23adfeca6542c19609fd7cd"
+    }
+  }
+}
