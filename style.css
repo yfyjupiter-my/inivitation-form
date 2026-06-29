@@ -236,7 +236,7 @@ body {
 }
 
 .rsvp-submit {
-  width: 100%; margin-top: 20px; padding: 12px;
+  margin-top: 20px; padding: 12px 32px;
   background: var(--accent); color: #fff;
   border: none; border-radius: 99px;
   font-size: 13px; font-weight: 700;
